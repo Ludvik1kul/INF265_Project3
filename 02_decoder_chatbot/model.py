@@ -4,10 +4,10 @@ import torch.nn as nn
 class DecoderBlock(nn.Module):
     def __init__(self, embed_size, num_heads, dropout):
         super().__init__()
-        # TODO: Implement this method
+        pass
 
     def forward(self, x, attn_mask, padding_mask):
-        # TODO: Implement this method
+        pass
 
 
 class PositionalEncoding(nn.Module):
@@ -16,13 +16,19 @@ class PositionalEncoding(nn.Module):
     """
     def __init__(self, embed_size, max_len):
         super().__init__()
-        # TODO: Implement this method
-        # Use self.register_bufffer("positional_encoding", positional_encoding) to store the positional encoding (not a parameter)
+        pe = torch.zeros(max_len, embed_size)
+        position = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)
+        div_term = torch.exp(torch.arange(0, embed_size, 2).float() * -(torch.log(torch.tensor(10000.0)) / embed_size))
+        pe[:, 0::2] = torch.sin(position * div_term)
+        pe[:, 1::2] = torch.cos(position * div_term)
+        pe = pe.unsqueeze(0)
+        self.register_buffer("pe", pe)
 
     def forward(self, x):
-        # TODO: Implement this method
         # Remember to slice the positional encoding to match the length of the input sequence
         # and to move the positional encoding to the device of the input tensor
+        x = x + self.pe[:, :x.size(1)]  # Add positional encodings
+        return x
 
 
 class TransformerModel(nn.Module):
@@ -66,7 +72,7 @@ class TransformerModel(nn.Module):
         """
         Generates an upper triangular mask to prevent attending to future tokens.
         """
-        # TODO: Implement this method
+        pass
         # You can use torch.ones and torch.triu to generate the mask and cast it to a boolean tensor with .bool()
 
 
