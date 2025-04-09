@@ -9,10 +9,7 @@ class QADataset(Dataset):
         self.dataset = load_dataset(config.dataset)[config.split]
         n_subset = int(config.model_train_fraction * len(self.dataset))
         self.dataset= self.dataset.select(range(n_subset))
-        print(
-            f"Loaded dataset of size {len(self.dataset)} with columns {self.dataset.column_names}"
-        )
-
+        print(f"Loaded dataset of size {len(self.dataset)} with columns {self.dataset.column_names}")
         self.tokenizer = tokenizer
         self.max_length = config.max_len
 
@@ -28,11 +25,21 @@ class QADataset(Dataset):
         question, answer = self.dataset[idx]["question"], self.dataset[idx]["answer"]
 
         # TODO: Implement this method
+        question_tokens = self.tokenizer.encode(
+            question, max_length=self.max_length, padding="max_length", truncation=True)
+        answer_tokens = self.tokenizer.encode(
+            answer, max_length=self.max_length, padding="max_length", truncation=True)
+        #concatinate with sep token between
+        input_tokens = question_tokens + [self.sep_id] + answer_tokens
+        source_sequence = input_tokens[:self.max_length]+[self.end_id]
+        target_sequence =  [self.pad_id]+source_sequence[1:]
+        #create padding mask 
+        padding_mask = torch.tensor([1 if token != self.pad_id else 0 for token in source_sequence])
 
         return {
-            "source_sequence": ..., 
-            "target_sequence": ...,
-            "key_padding_mask": ...,
+            "source_sequence": torch.tensor(source_sequence), 
+            "target_sequence": torch.tensor(target_sequence),
+            "key_padding_mask": padding_mask
         }
 
 
