@@ -4,10 +4,30 @@ import torch.nn as nn
 class DecoderBlock(nn.Module):
     def __init__(self, embed_size, num_heads, dropout):
         super().__init__()
-        pass
+        self.layernorm = nn.LayerNorm(embed_size)
+        self.multihead_attn = nn.MultiheadAttention(embed_dim=embed_size, num_heads=num_heads, batch_first=True)
+        self.dropout = nn.Dropout(dropout)
+        self.mlp = nn.Sequential(
+            nn.Linear(embed_size, embed_size * 4),
+            nn.GELU(),
+            nn.Dropout(p=0.1),
+            nn.Linear(embed_size * 4, embed_size),
+            nn.Dropout(p=0.1),
+        )
 
     def forward(self, x, attn_mask, padding_mask):
-        pass
+        skip = x
+        x = self.layernorm(x)
+        attn_out, attn_weights = self.multihead_attn(
+            x, x, x, attn_mask=attn_mask, key_padding_mask=padding_mask)
+        #not sure if (x, x, x) is the correct input
+        x = skip + self.dropout(attn_out)
+        skip = x
+        x = self.layernorm(x)
+        x = self.mlp(x)
+        x = skip + self.dropout(x)
+        return x
+
 
 
 class PositionalEncoding(nn.Module):
@@ -44,7 +64,7 @@ class TransformerModel(nn.Module):
 
         self.embedding = nn.Embedding(self.vocab_size, self.embed_size)
         self.dropout = nn.Dropout(self.dropout_p)
-        self.pos_encoder = PositionalEncoding(self.embed_size, self.max_len)
+        self.pos_encoder = PositionalEncoding(self.embed_size, self.max_len+1)
 
         self.layers = nn.ModuleList([DecoderBlock(self.embed_size, self.num_heads, self.dropout_p) for _ in range(self.num_layers)])
         self.fc_out = nn.Linear(self.embed_size, self.vocab_size)
@@ -72,8 +92,9 @@ class TransformerModel(nn.Module):
         """
         Generates an upper triangular mask to prevent attending to future tokens.
         """
-        pass
         # You can use torch.ones and torch.triu to generate the mask and cast it to a boolean tensor with .bool()
+        mask = torch.triu(torch.ones(seq_len, seq_len), diagonal=1).bool()
+        return mask
 
 
 if __name__ == "__main__":
