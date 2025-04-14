@@ -10,16 +10,14 @@ class DecoderBlock(nn.Module):
         self.mlp = nn.Sequential(
             nn.Linear(embed_size, embed_size * 4),
             nn.GELU(),
-            nn.Dropout(p=0.1),
             nn.Linear(embed_size * 4, embed_size),
-            nn.Dropout(p=0.1),
         )
 
     def forward(self, x, attn_mask, padding_mask):
         skip = x
         x = self.layernorm(x)
         attn_out, attn_weights = self.multihead_attn(
-            x, x, x, attn_mask=attn_mask, key_padding_mask=padding_mask)
+            x, x, x, attn_mask=attn_mask, key_padding_mask=padding_mask.float())
         #not sure if (x, x, x) is the correct input
         x = skip + self.dropout(attn_out)
         skip = x
@@ -93,7 +91,7 @@ class TransformerModel(nn.Module):
         Generates an upper triangular mask to prevent attending to future tokens.
         """
         # You can use torch.ones and torch.triu to generate the mask and cast it to a boolean tensor with .bool()
-        mask = torch.triu(torch.ones(seq_len, seq_len), diagonal=1).bool()
+        mask = torch.triu(torch.ones(seq_len+1, seq_len+1), diagonal=1).bool()
         return mask
 
 
@@ -114,7 +112,7 @@ if __name__ == "__main__":
     source = dataset[0]["source_sequence"].unsqueeze(0)
     target = dataset[0]["target_sequence"].unsqueeze(0)
     padding_mask = dataset[0]["key_padding_mask"].unsqueeze(0)
-
+    print("hello")
     # Forward pass
     out = model(source, padding_mask)
     print("Output shape:", out.shape)
@@ -124,4 +122,5 @@ if __name__ == "__main__":
     # Calculate loss
     loss = cross_entropy(out.transpose(1, 2), target)
     print("Loss:", loss.item())
+
 
