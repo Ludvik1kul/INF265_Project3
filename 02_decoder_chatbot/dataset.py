@@ -29,7 +29,6 @@ class QADataset(Dataset):
     def __getitem__(self, idx):
         question, answer = self.dataset[idx]["question"], self.dataset[idx]["answer"]
 
-        # TODO: Implement this method
 
         question_tokens = self.tokenizer.encode(question )
         answer_tokens = self.tokenizer.encode(answer)
@@ -37,7 +36,7 @@ class QADataset(Dataset):
         input_tokens = question_tokens.ids + [self.sep_id] +answer_tokens.ids
 
         source_sequence = input_tokens[: self.max_length]
-        target_sequence = [self.pad_id] + source_sequence[1:]
+        target_sequence = [self.pad_id] + input_tokens[1:self.max_length]
         #pad if too short
         if len(source_sequence)< self.max_length:
             source_sequence += [self.pad_id] * (self.max_length - len(source_sequence))

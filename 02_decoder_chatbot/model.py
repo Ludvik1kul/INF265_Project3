@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 
+
 class DecoderBlock(nn.Module):
     def __init__(self, embed_size, num_heads, dropout):
         super().__init__()
@@ -17,7 +18,7 @@ class DecoderBlock(nn.Module):
         skip = x
         x = self.layernorm(x)
         attn_out, attn_weights = self.multihead_attn(
-            x, x, x, attn_mask=attn_mask, key_padding_mask=padding_mask.float())
+            x, x, x, attn_mask=attn_mask, key_padding_mask=padding_mask.bool())
         #not sure if (x, x, x) is the correct input
         x = skip + self.dropout(attn_out)
         skip = x
