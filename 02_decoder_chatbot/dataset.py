@@ -44,7 +44,7 @@ class QADataset(Dataset):
         if len(source_sequence) < self.max_length:
             source_sequence += [self.pad_id] * (self.max_length - len(source_sequence))
         if len(target_sequence) < self.max_length:
-            target_sequence += [self.pad_id] * (self.max_length - len(target_sequence))
+            target_sequence += [-100] * (self.max_length - len(target_sequence))
         # create padding mask
         padding_mask = torch.tensor([0 if token != self.pad_id else 1 for token in source_sequence])
         return {
