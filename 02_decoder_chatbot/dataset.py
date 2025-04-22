@@ -34,12 +34,12 @@ class QADataset(Dataset):
         answer_tokens = self.tokenizer.encode(answer)
         # concatinate with sep token between
 
-        source_sequence = question_tokens.ids + [self.sep_id]  
-        target_sequence = [self.pad_id] + answer_tokens.ids + [self.end_id]
+        source_sequence = question_tokens.ids + [self.sep_id]  + answer_tokens.ids
+        target_sequence =  question_tokens.ids + [self.sep_id] + answer_tokens.ids
 
-        source_sequence = source_sequence[: self.max_length-1]+[self.end_id]
+        source_sequence = source_sequence[: self.max_length]
 
-        target_sequence = [self.pad_id] + target_sequence[1:self.max_length-1]+[self.end_id]
+        target_sequence = target_sequence[1:self.max_length+1]
         #pad if too short
         if len(source_sequence) < self.max_length:
             source_sequence += [self.pad_id] * (self.max_length - len(source_sequence))
