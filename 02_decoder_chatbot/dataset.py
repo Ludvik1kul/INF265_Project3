@@ -29,24 +29,24 @@ class QADataset(Dataset):
     def __getitem__(self, idx):
         question, answer = self.dataset[idx]["question"], self.dataset[idx]["answer"]
 
-        # TODO: Implement this method
 
         question_tokens = self.tokenizer.encode(question )
         answer_tokens = self.tokenizer.encode(answer)
         # concatinate with sep token between
-        input_tokens = question_tokens.ids + [self.sep_id] +answer_tokens.ids
 
-        source_sequence = input_tokens[: self.max_length]
-        target_sequence = [self.pad_id] + source_sequence[1:]
+        source_sequence = question_tokens.ids + [self.sep_id]  + answer_tokens.ids
+        target_sequence =  question_tokens.ids + [self.sep_id] + answer_tokens.ids
+
+        source_sequence = source_sequence[: self.max_length]
+
+        target_sequence = target_sequence[1:self.max_length+1]
         #pad if too short
-        if len(source_sequence)< self.max_length:
+        if len(source_sequence) < self.max_length:
             source_sequence += [self.pad_id] * (self.max_length - len(source_sequence))
+        if len(target_sequence) < self.max_length:
             target_sequence += [-100] * (self.max_length - len(target_sequence))
-        source_sequence += [self.end_id]
-        target_sequence += [self.end_id]
         # create padding mask
-        padding_mask = torch.tensor([1 if token != self.pad_id else 0 for token in source_sequence])
-
+        padding_mask = torch.tensor([0 if token != self.pad_id else 1 for token in source_sequence])
         return {
             "source_sequence": torch.tensor(source_sequence),
             "target_sequence": torch.tensor(target_sequence),

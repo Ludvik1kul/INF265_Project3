@@ -31,9 +31,9 @@ config = SimpleNamespace(**{
     "max_len": 128,
     "model_train_fraction": 1.0,
     "batch_size": 128,
-    "dataloader_num_workers": 2,
+    "dataloader_num_workers": 4,
     "lr": 1e-4,
-    "num_epochs": 5,
+    "num_epochs": 10,
     "model_filename": "temp/model.pth",
     "optimizer_filename": "temp/optimizer.pth",
     })
