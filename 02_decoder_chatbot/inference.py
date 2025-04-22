@@ -1,11 +1,9 @@
 import torch
 
 def greedy_sampling(last_token_logits):
-    # TODO: Implement greedy sampling (input is the logits of the last token, output is the selected token ID)
     token_id = torch.argmax(last_token_logits, dim=-1)
     return token_id
 def top_p_sampling(last_token_logits, p=0.95, temperature=0.7):
-    # TODO: Implement top-p sampling with temperature (input is the logits of the last token, output is the selected token ID)
     logits = last_token_logits / temperature
     probs = torch.softmax(logits, dim=-1)
     sorted_probs, sorted_indices = torch.sort(probs, descending=True)

@@ -21,7 +21,7 @@ class DecoderBlock(nn.Module):
         x = self.layernorm(x)
         attn_out, attn_weights = self.multihead_attn(
             x, x, x, attn_mask=attn_mask, key_padding_mask=padding_mask)
-        #not sure if (x, x, x) is the correct input
+
         x = skip + self.dropout(attn_out)
         skip = x
         x = self.layernorm(x)
@@ -46,9 +46,7 @@ class PositionalEncoding(nn.Module):
         self.register_buffer("pe", pe)
 
     def forward(self, x):
-        # Remember to slice the positional encoding to match the length of the input sequence
-        # and to move the positional encoding to the device of the input tensor
-        x = x + self.pe[:, :x.size(1)]  # Add positional encodings
+        x = x + self.pe[:, :x.size(1)]
         return x
 
 
@@ -93,7 +91,6 @@ class TransformerModel(nn.Module):
         """
         Generates an upper triangular mask to prevent attending to future tokens.
         """
-        # You can use torch.ones and torch.triu to generate the mask and cast it to a boolean tensor with .bool()
         mask = torch.triu(torch.ones(seq_len+1, seq_len+1), diagonal=1).bool()
         return mask
 
@@ -115,7 +112,7 @@ if __name__ == "__main__":
     source = dataset[0]["source_sequence"].unsqueeze(0)
     target = dataset[0]["target_sequence"].unsqueeze(0)
     padding_mask = dataset[0]["key_padding_mask"].unsqueeze(0)
-    print("hello")
+
     # Forward pass
     out = model(source, padding_mask)
     print("Output shape:", out.shape)
